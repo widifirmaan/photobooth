@@ -60,8 +60,8 @@ export default function SharedPaymentContent({
               <a href={paymentUrl || '#'} target="_blank" rel="noopener">
                 <img src={qrDataUrl} alt="QRIS payment code" style={{ width: 220, height: 220, background: '#fff', padding: 8, borderRadius: 8 }} />
               </a>
-              <p style={{ color: '#888', fontSize: 12, margin: 0, textAlign: 'center' }}>
-                Scan untuk buka halaman pembayaran
+              <p style={{ color: '#888', fontSize: 12, margin: 0, textAlign: 'center', maxWidth: 220 }}>
+                Scan dengan Kamera HP untuk buka halaman bayar, lalu pilih QRIS dan scan QRIS-nya dengan MyBCA / e-wallet
               </p>
               {paymentUrl && (
                 <a href={paymentUrl} target="_blank" rel="noopener" className={primaryButtonClassName} style={{ textDecoration: 'none' }}>

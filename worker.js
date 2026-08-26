@@ -1267,7 +1267,7 @@ async function handleDokuCharge(request, db, env) {
         const requestId = crypto.randomUUID();
         const timestamp = dokuTimestamp();
         const payload = JSON.stringify({
-            order: { amount: price, invoice_number: invoiceNumber },
+            order: { amount: price, invoice_number: invoiceNumber, currency: 'IDR' },
             payment: { payment_due_date: 60 },
         });
         const digest = await dokuDigest(payload);

@@ -5,8 +5,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Trash2, Loader2, ExternalLink } from 'lucide-react';
-import { AdminPageHeader, AdminTableCard, AdminConfirmModal } from '@/app/admin/components';
+import { Trash2, Loader2, ExternalLink, Pencil } from 'lucide-react';
+import { AdminPageHeader, AdminTableCard, AdminConfirmModal, AdminModal } from '@/app/admin/components';
 import { adminFetch } from '@/lib/utils/admin-fetch';
 import type { IStripElement } from '@/models/Template';
 import styles from './page.module.css';
@@ -34,6 +34,9 @@ export default function TemplatesAdmin() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<TemplateData | null>(null);
+  const [renameName, setRenameName] = useState('');
+  const [renameLoading, setRenameLoading] = useState(false);
   useEffect(() => {
     fetchTemplates();
   }, []);
@@ -67,6 +70,32 @@ export default function TemplatesAdmin() {
       console.error('Delete failed:', err);
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleRenameClick = (t: TemplateData) => {
+    setRenameTarget(t);
+    setRenameName(t.templateName);
+  };
+
+  const handleRenameSave = async () => {
+    if (!renameTarget || !renameName.trim()) return;
+    setRenameLoading(true);
+    try {
+      const res = await adminFetch(`/api/templates/${renameTarget._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateName: renameName.trim() }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Rename failed');
+      setRenameTarget(null);
+      await fetchTemplates();
+    } catch (err) {
+      console.error('Rename failed:', err);
+      alert('Rename failed: ' + String(err));
+    } finally {
+      setRenameLoading(false);
     }
   };
 
@@ -142,6 +171,9 @@ export default function TemplatesAdmin() {
                   </td>
                   <td>
                     <div className="flex-row flex-row-sm">
+                      <button className="icon-btn" onClick={() => handleRenameClick(t)} title="Rename template">
+                        <Pencil size={16} />
+                      </button>
                       <a href={`/admin/template-studio?edit=${t._id}`} className="icon-btn" title="Edit in Strips Studio">
                         <ExternalLink size={18} color="var(--accent-color)" />
                       </a>
@@ -174,6 +206,28 @@ export default function TemplatesAdmin() {
         loading={deleteLoading}
         variant="danger"
       />
+
+      {renameTarget && (
+        <AdminModal open={!!renameTarget} onClose={() => !renameLoading && setRenameTarget(null)} title="Edit Nama Template">
+          <p style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>Ubah nama template &quot;{renameTarget.templateName}&quot;</p>
+          <input
+            type="text"
+            value={renameName}
+            onChange={(e) => setRenameName(e.target.value)}
+            placeholder="Nama template"
+            autoFocus
+            className="admin-input"
+            style={{ width: '100%', marginBottom: 20 }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && renameName.trim()) handleRenameSave(); }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+            <button onClick={() => setRenameTarget(null)} disabled={renameLoading} className="btn btn-ghost">Batal</button>
+            <button onClick={handleRenameSave} disabled={renameLoading || !renameName.trim()} className="btn btn-primary">
+              {renameLoading ? 'Menyimpan...' : 'Simpan'}
+            </button>
+          </div>
+        </AdminModal>
+      )}
     </div>
   );
 }

@@ -215,6 +215,7 @@ function StripsStudioPage() {
           const data = res.data[0];
           setEditingTemplateId(data._id || editIdParam);
           setTemplateFolderId(data.templateId || null);
+          setTemplateIdField(data.templateId || data._id || makeId());
           setTemplateName(data.templateName || data.name || '');
           if (typeof data.templatePrice === 'number') setTemplatePrice(data.templatePrice);
           if (data.templateData?.color || data.color) setCanvasBg(data.templateData?.color || data.color);
@@ -243,8 +244,9 @@ function StripsStudioPage() {
             setElements([bgEl, ...photoSlots, ...generateSlotLayout(0)]);
             setSlotCount(photoSlots.length);
           }
+        } else {
+          setTemplateIdField(makeId());
         }
-        setTemplateIdField(makeId());
         setPageLoading(false);
       })
       .catch(() => setPageLoading(false));
@@ -307,6 +309,7 @@ function StripsStudioPage() {
 
   const handleNewTemplate = () => {
     setShowNewConfirm(false);
+    const newId = makeId();
     setElements(generateSlotLayout(3));
     setSlotCount(3);
     setSelectedId(null);
@@ -314,6 +317,8 @@ function StripsStudioPage() {
     setTemplateDesc('Designed in Strips Studio');
     setTemplatePrice(35000);
     setEditingTemplateId(null);
+    setTemplateFolderId(null);
+    setTemplateIdField(newId);
     setCanvasSize({ w: DEFAULT_CANVAS_W, h: DEFAULT_CANVAS_H });
     setCanvasBg('#ffffff');
   };
@@ -336,9 +341,9 @@ function StripsStudioPage() {
     setSaving(true);
     setSelectedId(null);
     try {
-      // Determine folder — reuse templateId from doc for updates, generate new ID for create
+      // Determine folder — reuse templateId from doc for updates, use displayed ID for create
       const isNew = !editingTemplateId;
-      const folderId = isNew ? makeId() : (templateFolderId || editingTemplateId);
+      const folderId = isNew ? (templateIdField || makeId()) : (templateFolderId || editingTemplateId);
       setTemplateIdField(folderId);
       const baseFolder = `velvetsnap/templates/${folderId}`;
 

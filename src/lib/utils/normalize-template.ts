@@ -6,7 +6,7 @@ export function normalizeTemplate(doc: any) {
   if (!doc) return doc;
   const td = doc.templateData || {};
   return {
-    _id: doc._id,
+    _id: doc._id || doc.id,
     templateId: doc.templateId,
     templateName: doc.templateName || doc.name || '',
     templateDesc: doc.templateDesc || doc.description || '',

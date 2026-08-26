@@ -14,6 +14,7 @@ interface SharedPaymentContentProps {
   hasSnapError: boolean;
   errorMessage: string | null;
   paymentUrl?: string | null;
+  qrDataUrl?: string | null;
   onRetry: () => void;
   onBypass: () => Promise<void>;
   isBypassing?: boolean;
@@ -32,6 +33,7 @@ export default function SharedPaymentContent({
   hasSnapError,
   errorMessage,
   paymentUrl,
+  qrDataUrl,
   onRetry,
   onBypass,
   isBypassing = false,
@@ -53,14 +55,26 @@ export default function SharedPaymentContent({
         </div>
       ) : (
         <>
-          {paymentUrl ? (
+          {qrDataUrl ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+              <a href={paymentUrl || '#'} target="_blank" rel="noopener">
+                <img src={qrDataUrl} alt="QRIS payment code" style={{ width: 220, height: 220, background: '#fff', padding: 8, borderRadius: 8 }} />
+              </a>
+              <p style={{ color: '#888', fontSize: 12, margin: 0, textAlign: 'center' }}>
+                Scan untuk buka halaman pembayaran
+              </p>
+              {paymentUrl && (
+                <a href={paymentUrl} target="_blank" rel="noopener" className={primaryButtonClassName} style={{ textDecoration: 'none' }}>
+                  Buka Halaman Bayar
+                </a>
+              )}
+            </div>
+          ) : paymentUrl ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 18 }}>
               <a href={paymentUrl} target="_blank" rel="noopener" className={primaryButtonClassName} style={{ textDecoration: 'none' }}>
                 Bayar Sekarang (QRIS)
               </a>
-              <p style={{ color: '#888', fontSize: 12, margin: 0, textAlign: 'center' }}>
-                Buka halaman pembayaran, pilih QRIS, lalu scan. Halaman ini memeriksa otomatis.
-              </p>
+              <p style={{ color: '#888', fontSize: 12, margin: 0, textAlign: 'center' }}>Membuka QR...</p>
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 180, marginBottom: 18 }}>
@@ -80,7 +94,7 @@ export default function SharedPaymentContent({
               <button className={primaryButtonClassName} onClick={onRetry} style={{ marginTop: 12 }}>Retry</button>
             </div>
           )}
-          {!errorMessage && !hasSnapError && isLoading && !paymentUrl && (
+          {!errorMessage && !hasSnapError && isLoading && !qrDataUrl && (
             <p style={{ color: '#888', fontSize: 13, marginTop: 12, textAlign: 'center' }}>
               Generating payment link...
             </p>

@@ -21,6 +21,7 @@ export interface PaymentFlowResult {
   paid: boolean;
   errMsg: string | null;
   paymentUrl: string | null;
+  qrDataUrl: string | null;
   handleBypass: () => Promise<void>;
 }
 
@@ -31,6 +32,7 @@ export function usePaymentFlow({ price, templateId, captures, videos, composited
   const [paid, setPaid] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const autoTriggered = useRef(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -213,8 +215,12 @@ export function usePaymentFlow({ price, templateId, captures, videos, composited
         const { paymentUrl: url, transactionId, orderId } = chargeData.data;
         if (transactionId) sessionStorage.setItem(STORAGE_KEYS.PHOTOBOOTH_TX_ID, transactionId);
 
-        // DOKU Checkout v3 returns a hosted payment page (QRIS inside).
         setPaymentUrl(url);
+        try {
+          const QRCode = await import('qrcode');
+          const qr = await QRCode.toDataURL(url, { width: 512, margin: 2 });
+          setQrDataUrl(qr);
+        } catch {}
         setLoading(false);
 
         pollRef.current = setInterval(async () => {
@@ -260,5 +266,5 @@ export function usePaymentFlow({ price, templateId, captures, videos, composited
     await finalizeOrder('BYPASS');
   }, [paid, finalizeOrder]);
 
-  return { loading, snapLoaded, snapError, paid, errMsg, paymentUrl, handleBypass };
+  return { loading, snapLoaded, snapError, paid, errMsg, paymentUrl, qrDataUrl, handleBypass };
 }
